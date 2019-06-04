@@ -1,0 +1,93 @@
+// Copyright (C) 2019, ATA Engineering, Inc.
+// 
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 3 of the License, or (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
+// 
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program; if not, write to the Free Software Foundation,
+// Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+
+#include <Loci.h>
+// chem.lh must come before chemio.h
+$include "chem.lh"
+#include "chemio.h"
+#include <iostream>
+#include <iomanip>
+#include <fstream>
+
+using std::cerr;
+using std::endl;
+
+namespace chem {
+ 
+  // static varibles to track the start time and accumulation of wall time
+  static double wallTime = 0.0;
+  static double startTime = 0.0;
+
+  // classes to handle closing of file
+  std::ofstream timingFile;
+
+  void LociTimingCloser(int code) {
+    // close timing file already opened on Loci error
+    if (timingFile.is_open()) {
+      timingFile.close();
+    }
+  }
+
+  static int timingFileCloser_registered = 0;
+  class timingFileCloser {
+   public:
+    timingFileCloser() {
+      if (timingFileCloser_registered == 0) {
+        Loci::register_closing_function(LociTimingCloser);
+        timingFileCloser_registered = 1;
+      }
+    }
+    ~timingFileCloser() {
+      // close timing file already opened
+      if (timingFile.is_open()) {
+        timingFile.close();
+      }
+    }
+  };
+
+  $type timingFileManager blackbox<timingFileCloser>;
+  $rule blackbox(timingFileManager), constraint(UNIVERSE) {}
+
+  // rule to output the iteration, iteration time, and total time to a
+  // file in the output directory.
+  $rule singleton(OUTPUT{n,it} <- ncycle{n,it}, $it{n,it}, timingFileManager), 
+    conditional(do_report{n,it}) { 
+    $[Once] {
+      const double currTime = MPI_Wtime();
+      if (!timingFile.is_open()) {
+        timingFile.open("output/timing.dat", std::ios::out);
+        if (timingFile.fail()) {
+          cerr << "ERROR: can't open 'output/timing.dat'" << endl;
+        } else {
+          timingFile << "Iteration   Subiteration   IterationTime   TotalTime"
+                     << endl;
+        }
+        startTime = currTime;
+      }
+
+      const double iterTime = currTime - startTime - wallTime;
+      wallTime = currTime - startTime;
+
+      if (timingFile.is_open()) {
+        timingFile << std::left << std::setw(9) << $ncycle{n, it} << "   ";
+        timingFile << std::setw(12) << $$it{n, it} << "   ";
+        timingFile << std::scientific << std::setprecision(6);
+        timingFile << std::setw(13) << iterTime << "   " << wallTime << endl;
+      }
+    }
+  }
+  
+}
