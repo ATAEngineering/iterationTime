@@ -80,8 +80,8 @@ upload_packages:
     - |
       ls -lh
       echo $PACKAGE_REGISTRY_URL
-      curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file ${MODULE_NAME}-${VERSION}-openmpi.tar.gz "${PACKAGE_REGISTRY_URL}/${MODULE_NAME}-${VERSION}-build-openmpi.tar.gz"
-      curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file ${MODULE_NAME}-${VERSION}-mpich.tar.gz "${PACKAGE_REGISTRY_URL}/${MODULE_NAME}-${VERSION}-build-mpich.tar.gz"
+      curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file ${MODULE_NAME}-${VERSION}-build-openmpi.tar.gz "${PACKAGE_REGISTRY_URL}/${MODULE_NAME}-${VERSION}-build-openmpi.tar.gz"
+      curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file ${MODULE_NAME}-${VERSION}-build-mpich.tar.gz "${PACKAGE_REGISTRY_URL}/${MODULE_NAME}-${VERSION}-build-mpich.tar.gz"
 
 # This will upload a tarball with the distribution to the package registry, but only when tagged
 # See: https://docs.gitlab.com/ee/user/project/releases/release_fields.html#release-assets
