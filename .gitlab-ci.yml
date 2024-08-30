@@ -117,9 +117,13 @@ release_job:
     ref: $CI_COMMIT_SHA
     assets:
       links:
-        - name: ${MODULE_NAME}_m.so
-          url: "${PACKAGE_REGISTRY_URL}/${MODULE_NAME}_m.so"
-          filepath: "/${MODULE_NAME}_m.so"
+        - name: ${MODULE_NAME}-${VERSION}-openmpi.tar.gz
+          url: "${PACKAGE_REGISTRY_URL}/${MODULE_NAME}-${VERSION}-openmpi.tar.gz"
+          filepath: "/${MODULE_NAME}-${VERSION}-openmpi.tar.gz"
+          link_type: package
+        - name: ${MODULE_NAME}-${VERSION}-mpich.tar.gz
+          url: "${PACKAGE_REGISTRY_URL}/${MODULE_NAME}-${VERSION}-mpich.tar.gz"
+          filepath: "/${MODULE_NAME}-${VERSION}-mpich.tar.gz"
           link_type: package
         - name: ${MODULE_NAME}-${VERSION}.tar.gz
           url: "${PACKAGE_REGISTRY_URL}/${MODULE_NAME}-${VERSION}.tar.gz"
